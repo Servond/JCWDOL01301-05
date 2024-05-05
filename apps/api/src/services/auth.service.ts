@@ -1,11 +1,10 @@
-import { API_KEY } from '@/config';
 import { HttpException } from '@/exceptions/http.exception';
 import { IAuth } from '@/interfaces/auth.interface';
 import { AuthQuery } from '@/queries/auth.query';
 import { UserQuery } from '@/queries/user.query';
 import { generateJWT } from '@/utils/auth.utils';
+import { User } from '@prisma/client';
 import { compare, genSalt, hash } from 'bcrypt';
-import { sign } from 'jsonwebtoken';
 import { Container, Service } from 'typedi';
 
 @Service()
@@ -13,10 +12,11 @@ export class AuthService {
   user = Container.get(UserQuery);
   auth = Container.get(AuthQuery);
 
-  public registerService = async (data: IAuth): Promise<IAuth> => {
+  public registerService = async (data: IAuth): Promise<User> => {
     try {
       // 1. check is email unique
       // let userQuery = new UserQuery();
+      let refUser: User;
       const isExist = await this.user.getUserByEmailQuery(data.userEmail);
 
       if (isExist) throw new Error('Email already exist!');
@@ -24,17 +24,27 @@ export class AuthService {
       //2. generate unique referral code
       const refCode = data.userName + Math.random().toString(36).slice(2);
 
-      //3. encrypt password
+      //3. match inserted referral code from other (to get discount coupon) [optional]
+      if (data.referralCode) {
+        refUser = await this.user.matchUserReferralCodeQuery(data.referralCode);
+      }
+
+      //4. encrypt password
       const salt = await genSalt(10);
       const hashPass = await hash(data.userPassword, salt);
 
-      //4. regist user
-      const user = this.auth.registerQuery(
+      //5. regist user
+      const user = await this.auth.registerQuery(
         data,
         refCode,
         hashPass,
         Number(data?.userRoleId),
       );
+
+      //6. referrer user get bonus, and registered user get coupon
+      if (refUser) {
+        await this.user.referralBonusQuery(refUser, Number(user.id));
+      }
 
       return user;
     } catch (error) {

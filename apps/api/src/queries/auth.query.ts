@@ -1,5 +1,5 @@
 import { IAuth } from '@/interfaces/auth.interface';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import { Service } from 'typedi';
 
 import { IUser } from '@/interfaces/user.interface';
@@ -23,7 +23,7 @@ export class AuthQuery {
     refCode: string,
     password: string,
     roleId: number,
-  ): Promise<IAuth> => {
+  ): Promise<User> => {
     try {
       const { userEmail, userName } = data;
       const user = await this.prisma.user.create({
