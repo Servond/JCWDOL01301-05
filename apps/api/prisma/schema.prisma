@@ -19,3 +19,189 @@ model Sample {
 
   @@map("samples") // if you want to use snake_case format
 }
+
+model User {
+  id               Int     @id @default(autoincrement())
+  userName         String
+  userEmail        String  @unique
+  userReferralCode String  @unique
+  userPassword     String
+  isVerified       Boolean @default(false)
+
+  roleId        Int
+  role          Role            @relation(fields: [roleId], references: [id])
+  Point         Point[]
+  MapUserCoupon MapUserCoupon[]
+  Event         Event[]
+  ReviewRating  ReviewRating[]
+  Transaction   Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Role {
+  id       Int    @id @default(autoincrement())
+  roleName String
+  User     User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Point {
+  id             Int      @id @default(autoincrement())
+  pointQty       Int
+  pointStartDate DateTime
+  pointEndDate   DateTime
+  pointByUserId  Int
+  isUsed         Boolean
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id              Int             @id @default(autoincrement())
+  couponKey       String          @db.VarChar(50)
+  couponName      String          @db.VarChar(50)
+  couponDesc      String          @db.VarChar(255)
+  couponStartDate DateTime
+  couponEndDate   DateTime
+  MapUserCoupon   MapUserCoupon[]
+  Transaction     Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MapUserCoupon {
+  userId   Int
+  couponId Int
+
+  user      User     @relation(fields: [userId], references: [id])
+  coupon    Coupon   @relation(fields: [couponId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, couponId])
+}
+
+model EventCategories {
+  id                  Int     @id @default(autoincrement())
+  eventCategoriesName String  @db.VarChar(50)
+  Event               Event[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id                Int      @id @default(autoincrement())
+  eventName         String
+  eventDateTime     DateTime
+  eventLocationName String   @db.VarChar(50)
+  eventLocationURL  String   @db.VarChar(100)
+  eventDescription  String   @db.VarChar(255)
+  eventImage        String   @db.VarChar(50)
+  eventBookingStart DateTime
+  eventBookingEnd   DateTime
+  eventTnc          String
+  eventMaxCapacity  Int
+  isFree            Boolean
+
+  eventCategoriesId Int
+  eventCategories   EventCategories @relation(fields: [eventCategoriesId], references: [id])
+
+  userId       Int
+  user         User           @relation(fields: [userId], references: [id])
+  ReviewRating ReviewRating[]
+  Promotion    Promotion[]
+  TicketType   TicketType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReviewRating {
+  ratingStar    Int
+  reviewComment String @db.VarChar(255)
+  suggestion    String @db.VarChar(255)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  eventId Int
+  event   Event @relation(fields: [eventId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, eventId])
+}
+
+model Promotion {
+  id                 Int      @id @default(autoincrement())
+  promotionName      String   @db.VarChar(255)
+  promotionDesc      String   @db.VarChar(255)
+  promotionDiscount  Int
+  promotionStartDate DateTime
+  promotionEndDate   DateTime
+  promotionQty       Int
+
+  eventId     Int
+  event       Event         @relation(fields: [eventId], references: [id])
+  Transaction Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id                   Int      @id @default(autoincrement())
+  transactionDate      DateTime
+  transactionPointUsed Int
+  isPromotion          Boolean
+
+  promotionId Int
+  couponId    Int?
+  userId      Int
+
+  promotion                Promotion                  @relation(fields: [promotionId], references: [id])
+  coupon                   Coupon?                    @relation(fields: [couponId], references: [id])
+  user                     User                       @relation(fields: [userId], references: [id])
+  MapTransactionTicketType MapTransactionTicketType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TicketType {
+  id                    Int    @id @default(autoincrement())
+  ticketTypeName        String @db.VarChar(100)
+  ticketTypePrice       Int
+  ticketTypeDescription String @db.VarChar(255)
+  ticketTypeQuota       Int
+
+  eventId                  Int
+  event                    Event                      @relation(fields: [eventId], references: [id])
+  MapTransactionTicketType MapTransactionTicketType[]
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+}
+
+model MapTransactionTicketType {
+  ticketTypeId  Int
+  transactionId Int
+
+  ticketType  TicketType  @relation(fields: [ticketTypeId], references: [id])
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([ticketTypeId, transactionId])
+}

@@ -5,6 +5,8 @@ export class SampleController {
   async getSampleData(req: Request, res: Response) {
     const sampleData = await prisma.sample.findMany();
 
+    const isError = true;
+    if (isError) return res.send(404);
     return res.status(200).send(sampleData);
   }
 
