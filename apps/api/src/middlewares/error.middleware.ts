@@ -7,10 +7,14 @@ export const ErrorMiddleware = (
   next: NextFunction,
 ) => {
   try {
-    const status: number = error.status || 500;
-    const message: string = error.message || 'Something went wrong';
+    if (req.path.includes('/api/')) {
+      const status: number = error.status || 500;
+      const message: string = error.message || 'Something went wrong';
 
-    res.status(status).json({ message });
+      res.status(status).json({ message });
+    } else {
+      next(error);
+    }
   } catch (error) {
     next(error);
   }

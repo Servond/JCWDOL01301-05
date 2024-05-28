@@ -1,4 +1,4 @@
-import e, { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '@/services/auth.service';
 import { Container } from 'typedi';
 

@@ -104,9 +104,9 @@ model Event {
   eventName         String
   eventDateTime     DateTime
   eventLocationName String   @db.VarChar(50)
-  eventLocationURL  String   @db.VarChar(100)
+  eventLocationURL  String   @db.VarChar(255)
   eventDescription  String   @db.VarChar(255)
-  eventImage        String   @db.VarChar(50)
+  eventImage        String   @db.VarChar(255)
   eventBookingStart DateTime
   eventBookingEnd   DateTime
   eventTnc          String

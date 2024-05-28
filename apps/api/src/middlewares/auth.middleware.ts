@@ -32,7 +32,7 @@ export class AuthMiddleware {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      if (Number(req?.user?.roleId) !== 2) {
+      if (Number(req.user?.roleId) !== 2) {
         throw new HttpException(403, 'Forbidden Access');
       }
       next();
