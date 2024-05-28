@@ -1,23 +1,16 @@
 import { IAuth } from '@/interfaces/auth.interface';
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { Service } from 'typedi';
-
-import { IUser } from '@/interfaces/user.interface';
 import { generateJWT } from '@/utils/auth.utils';
 import { FE_URL } from '@/config';
 import * as handlebars from 'handlebars';
 import path from 'path';
 import fs from 'fs';
 import { transporter } from '@/helpers/nodemailer';
+import prisma from '@/prisma';
 
 @Service()
 export class AuthQuery {
-  private prisma: PrismaClient;
-
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
-
   public registerQuery = async (
     data: IAuth,
     refCode: string,
@@ -26,7 +19,7 @@ export class AuthQuery {
   ): Promise<User> => {
     try {
       const { userEmail, userName } = data;
-      const user = await this.prisma.user.create({
+      const user = await prisma.user.create({
         data: {
           userEmail,
           userName,
@@ -48,7 +41,7 @@ export class AuthQuery {
 
   public verifyUserQuery = async (email: string): Promise<void> => {
     try {
-      await this.prisma.user.update({
+      await prisma.user.update({
         where: {
           userEmail: email,
         },

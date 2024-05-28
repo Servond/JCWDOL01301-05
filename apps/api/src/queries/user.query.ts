@@ -1,19 +1,14 @@
 import { HttpException } from '@/exceptions/http.exception';
 import { IUser } from '@/interfaces/user.interface';
-import { PrismaClient, User } from '@prisma/client';
+import prisma from '@/prisma';
+import { User } from '@prisma/client';
 import { Service } from 'typedi';
 
 @Service()
 export class UserQuery {
-  private prisma: PrismaClient;
-
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
-
   public getUserByEmailQuery = async (email: string): Promise<IUser | null> => {
     try {
-      const user = await this.prisma.user.findFirst({
+      const user = await prisma.user.findFirst({
         select: {
           id: true,
           userName: true,
@@ -41,7 +36,7 @@ export class UserQuery {
   ): Promise<User> => {
     try {
       //1. find and match ref code from another user
-      const referrerUser = await this.prisma.user.findFirst({
+      const referrerUser = await prisma.user.findFirst({
         where: {
           userReferralCode: refCode,
         },
@@ -64,7 +59,7 @@ export class UserQuery {
       const expiredDate = new Date(
         new Date().setMonth(new Date().getMonth() + 3),
       );
-      await this.prisma.point.create({
+      await prisma.point.create({
         data: {
           pointQty: 10000,
           pointStartDate: new Date(),
@@ -76,7 +71,7 @@ export class UserQuery {
       });
 
       //2. user who redeem referral code got discount coupon
-      const coupon = await this.prisma.coupon.create({
+      const coupon = await prisma.coupon.create({
         data: {
           couponKey:
             user.userName + 'RefCode' + Math.random().toString(36).slice(2),
@@ -87,7 +82,7 @@ export class UserQuery {
         },
       });
 
-      await this.prisma.mapUserCoupon.create({
+      await prisma.mapUserCoupon.create({
         data: {
           couponId: coupon.id,
           userId: redeemedBy,

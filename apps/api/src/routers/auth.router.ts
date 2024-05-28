@@ -4,13 +4,11 @@ import { Router } from 'express';
 
 export class AuthRouter {
   private router: Router;
-  private path: string;
   private Auth: AuthController;
   private Guard: AuthMiddleware;
 
   constructor() {
     this.router = Router();
-    this.path = '/auth';
     this.Auth = new AuthController();
     this.Guard = new AuthMiddleware();
     this.initializeRoutes();
